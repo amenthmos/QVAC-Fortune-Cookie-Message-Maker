@@ -43,7 +43,13 @@ async function main() {
     if (req.method === "POST" && req.url === "/api/fortune") {
       try {
         const { theme } = await readBody(req);
-        const result = await generate(modelId, (theme || "").trim());
+        const trimmedTheme = (theme || "").trim();
+        if (trimmedTheme.length > 60) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Theme is too long (max 60 characters)" }));
+          return;
+        }
+        const result = await generate(modelId, trimmedTheme);
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(result));
       } catch (error) {
